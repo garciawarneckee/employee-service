@@ -1,15 +1,15 @@
 package com.linke.employeeservice.employee;
 
+import com.linke.employeeservice.employee.repository.EmployeeSpecifications;
+import com.linke.employeeservice.employee.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class EmployeeController {
@@ -22,11 +22,12 @@ public class EmployeeController {
     }
 
     @GetMapping(path = "/employees", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Employee> getAll(@RequestParam Optional<String> firstName,
-                                 @RequestParam Optional<String> lastName,
-                                 @RequestParam Optional<String> charge,
-                                 @RequestParam Optional<Long> salary) {
-        return this.employeeService.getAll();
+    public List<Employee> getAll(@RequestParam(required = false) String firstName,
+                                 @RequestParam(required = false) String lastName,
+                                 @RequestParam(required = false) String charge,
+                                 @RequestParam(required = false) Long salary) {
+        Specification filters = EmployeeSpecifications.findByCriteria(firstName, lastName, charge, salary);
+        return this.employeeService.getAll(filters);
     }
 
     @PostMapping(path = "/employees", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -43,4 +44,5 @@ public class EmployeeController {
     public Boolean delete(@PathVariable Long id) {
         return this.employeeService.delete(id);
     }
+
 }
