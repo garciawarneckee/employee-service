@@ -36,7 +36,7 @@ public class EmployeeController {
     public ResponseEntity save(@RequestBody Employee employee) {
         try {
             this.service.save(employee);
-            return new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
+            return new ResponseEntity<>(Boolean.TRUE, HttpStatus.CREATED);
         } catch (RuntimeException rex) {
             return new ResponseEntity<>(Boolean.TRUE, HttpStatus.INTERNAL_SERVER_ERROR);
         }

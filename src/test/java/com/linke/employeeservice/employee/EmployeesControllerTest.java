@@ -3,9 +3,11 @@ package com.linke.employeeservice.employee;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -238,8 +240,6 @@ public class EmployeesControllerTest {
     @Test
     public void shouldSaveSuccessFully() throws Exception {
 
-        ObjectMapper mapper = new ObjectMapper();
-
         Employee employee = new Employee(
                 "new",
                 "employee",
@@ -251,19 +251,14 @@ public class EmployeesControllerTest {
                 .thenReturn(Boolean.TRUE);
 
 
-        MvcResult result = this.mockMvc.perform(
+        this.mockMvc.perform(
                 post("/employees")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{ \"firstName\": \"new\", \"lastName\": \"employee\", " +
                                 "\"charge\": \"charge\", \"salary\": 4000}"))
-                .andReturn();
+                .andExpect(content().string("true"))
+                .andExpect(status().is(201));
 
-        Boolean actual = mapper
-                .readValue(
-                        result.getResponse().getContentAsString(),
-                        new TypeReference<Boolean>() {});
-
-        assertThat(actual).isEqualTo(true);
     }
 
 }
