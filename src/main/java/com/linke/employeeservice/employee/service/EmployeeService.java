@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -32,6 +33,12 @@ public class EmployeeService {
         }
     }
 
+    @Transactional
+    public Boolean bulkSave(List<Employee> employees) {
+        employees.forEach(this::save);
+        return Boolean.TRUE;
+    }
+
     public Boolean delete(Long id) {
         try {
             employeeRepository.deleteById(id);
@@ -39,6 +46,5 @@ public class EmployeeService {
         } catch(RuntimeException rex) {
             throw new RuntimeException("Error while deleting");
         }
-
     }
 }
