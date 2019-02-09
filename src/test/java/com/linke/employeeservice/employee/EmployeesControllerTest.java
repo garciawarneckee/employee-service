@@ -4,8 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import static org.mockito.Mockito.when;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -250,7 +249,6 @@ public class EmployeesControllerTest {
                 .save(employee))
                 .thenReturn(Boolean.TRUE);
 
-
         this.mockMvc.perform(
                 post("/employees")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -258,7 +256,19 @@ public class EmployeesControllerTest {
                                 "\"charge\": \"charge\", \"salary\": 4000}"))
                 .andExpect(content().string("true"))
                 .andExpect(status().is(201));
+    }
 
+    @Test
+    public void shouldDeleteSuccessfully() throws Exception {
+
+        when(service
+                .delete(3L))
+                .thenReturn(Boolean.TRUE);
+
+        this.mockMvc.perform(
+                delete("/employees/3"))
+                .andExpect(content().string("true"))
+                .andExpect(status().is(200));
     }
 
 }
