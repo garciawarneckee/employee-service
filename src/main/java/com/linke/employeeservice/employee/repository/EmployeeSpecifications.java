@@ -2,6 +2,7 @@ package com.linke.employeeservice.employee.repository;
 
 import com.linke.employeeservice.employee.Employee;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Component;
 
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
@@ -13,21 +14,22 @@ import java.util.stream.Collectors;
  * This class provides Criteria filter methods to be apply over Employee entity.
  */
 
+@Component
 public class EmployeeSpecifications {
 
-    public static Specification<Employee> hasFirstName(String firstName) {
+    public Specification<Employee> hasFirstName(String firstName) {
         return (employee, query, builder) -> builder.equal(employee.get("firstName"), firstName);
     }
 
-    public static Specification<Employee> hasLastName(String lastName) {
+    public Specification<Employee> hasLastName(String lastName) {
         return (employee, query, builder) -> builder.equal(employee.get("lastName"), lastName);
     }
 
-    public static Specification<Employee> hasCharge(String charge) {
+    public Specification<Employee> hasCharge(String charge) {
         return (employee, query, builder) -> builder.equal(employee.get("charge"), charge);
     }
 
-    public static Specification<Employee> hasSalary(Long salary) {
+    public Specification<Employee> hasSalary(Long salary) {
         return (employee, query, builder) -> builder.equal(employee.get("salary"), salary);
     }
 
@@ -41,14 +43,14 @@ public class EmployeeSpecifications {
      * @param salary employee salary
      * @return a list of predicates to be applied in future query
      */
-    public static Specification<Employee> findByCriteria(String firstName, String lastName,
-                                                         String charge, Long salary) {
+    public Specification<Employee> buildCriteria(String firstName, String lastName,
+                                                        String charge, Long salary) {
         return (root, query, builder) -> {
             List<Specification> specifications = new ArrayList<>();
-            if(firstName != null) { specifications.add(EmployeeSpecifications.hasFirstName(firstName)); }
-            if(lastName != null) { specifications.add(EmployeeSpecifications.hasLastName(lastName)); }
-            if(charge != null) { specifications.add(EmployeeSpecifications.hasCharge(charge)); }
-            if(salary != null) { specifications.add(EmployeeSpecifications.hasSalary(salary)); }
+            if(firstName != null) { specifications.add(hasFirstName(firstName)); }
+            if(lastName != null) { specifications.add(hasLastName(lastName)); }
+            if(charge != null) { specifications.add(hasCharge(charge)); }
+            if(salary != null) { specifications.add(hasSalary(salary)); }
 
             List<Predicate> predicates = specifications
                                 .stream()

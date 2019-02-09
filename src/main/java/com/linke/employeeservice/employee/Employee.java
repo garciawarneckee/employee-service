@@ -5,6 +5,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 import java.io.File;
+import java.util.Objects;
 
 @Entity
 public class Employee {
@@ -93,5 +94,22 @@ public class Employee {
         this.photo = photo;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Employee employee = (Employee) o;
+        return Objects.equals(id, employee.id) &&
+                firstName.equals(employee.firstName) &&
+                lastName.equals(employee.lastName) &&
+                charge.equals(employee.charge) &&
+                salary.equals(employee.salary) &&
+                Objects.equals(photo, employee.photo);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, firstName, lastName, charge, salary, photo);
+    }
 
 }

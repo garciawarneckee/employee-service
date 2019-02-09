@@ -14,11 +14,13 @@ import java.util.List;
 @RestController
 public class EmployeeController {
 
-    private EmployeeService employeeService;
+    private EmployeeService service;
+    private EmployeeSpecifications specifications;
 
     @Autowired
-    public EmployeeController(EmployeeService employeeService) {
-        this.employeeService = employeeService;
+    public EmployeeController(EmployeeService service, EmployeeSpecifications specifications) {
+        this.service = service;
+        this.specifications = specifications;
     }
 
     @GetMapping(path = "/employees", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -26,15 +28,15 @@ public class EmployeeController {
                                  @RequestParam(required = false) String lastName,
                                  @RequestParam(required = false) String charge,
                                  @RequestParam(required = false) Long salary) {
-        Specification filters = EmployeeSpecifications.findByCriteria(firstName, lastName, charge, salary);
-        return this.employeeService.getAll(filters);
+        Specification filters = specifications.buildCriteria(firstName, lastName, charge, salary);
+        return this.service.getAll(filters);
     }
 
     @PostMapping(path = "/employees", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity save(@RequestBody Employee employee) {
         try {
-            this.employeeService.save(employee);
-            return new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
+            this.service.save(employee);
+            return new ResponseEntity<>(Boolean.TRUE, HttpStatus.CREATED);
         } catch (RuntimeException rex) {
             return new ResponseEntity<>(Boolean.TRUE, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -42,7 +44,7 @@ public class EmployeeController {
 
     @DeleteMapping(path = "/employees/{id}")
     public Boolean delete(@PathVariable Long id) {
-        return this.employeeService.delete(id);
+        return this.service.delete(id);
     }
 
 }
