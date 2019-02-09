@@ -1,12 +1,12 @@
 package com.linke.employeeservice.employee;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
+
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,19 +19,21 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
+
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+/**
+ * In charge to test the REST interface of the API's Employee resource
+ */
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -79,4 +81,191 @@ public class EmployeesControllerTest {
 
         assertThat(actual).isEqualTo(employeesList);
     }
+
+    @Test
+    public void shouldReturnOnlyOneEmployeeByFirstName() throws Exception {
+
+        ObjectMapper mapper = new ObjectMapper();
+        List<Specification> spec = Arrays.asList(specifications.hasFirstName("David"));
+
+        List<Employee> employeesList = Arrays.asList(
+                new Employee( 1L,"David", "Beckham", "Developer", 400000L, null),
+                new Employee(2L,"Michael", "Ballack", "Scrum Master", 450000L, null),
+                new Employee(3L,"Lionel", "Messi", "Software Architect", 50000L, null));
+
+        List expectedList = Collections.singletonList(employeesList.toArray()[0]);
+
+        when(specifications.buildCriteria(
+                "David",
+                null,
+                null,
+                null))
+                .thenReturn((root, query, builder) -> builder.and(spec.toArray(new Predicate[]{}))) ;
+
+        when(service
+                .getAll(specifications.buildCriteria("David" ,null, null, null)))
+                .thenReturn(expectedList);
+
+        MvcResult result = this.mockMvc.perform(get("/employees?firstName=David"))
+                .andReturn();
+
+        List<Employee> actual = mapper
+                .readValue(
+                        result.getResponse().getContentAsString(),
+                        new TypeReference<List<Employee>>() {});
+
+        assertThat(actual).isEqualTo(expectedList);
+    }
+
+    @Test
+    public void shouldReturnOnlyTwoEmployeesByLastName() throws Exception {
+
+        ObjectMapper mapper = new ObjectMapper();
+
+
+        List<Employee> employeesList = Arrays.asList(
+                new Employee( 1L,"David", "Beckham", "Developer", 400000L, null),
+                new Employee(2L,"Michael", "Ballack", "Scrum Master", 450000L, null),
+                new Employee(3L,"Lionel", "Messi", "Software Architect", 50000L, null),
+                new Employee(4L,"Leonard", "Ballack", "CEO", 1450000L, null));
+
+        List expectedList = Arrays.asList(
+                employeesList.toArray()[1], employeesList.toArray()[3]);
+
+        List<Specification> specs = Arrays.asList(specifications.hasLastName("Ballack"));
+
+        when(specifications.buildCriteria(
+                null,
+                "Ballack",
+                null,
+                null))
+                .thenReturn((root, query, builder) -> builder.and(specs.toArray(new Predicate[]{}))) ;
+
+        when(service
+                .getAll(specifications.buildCriteria(null ,"Ballack", null, null)))
+                .thenReturn(expectedList);
+
+        MvcResult result = this.mockMvc.perform(get("/employees?lastName=Ballack"))
+                .andReturn();
+
+        List<Employee> actual = mapper
+                .readValue(
+                        result.getResponse().getContentAsString(),
+                        new TypeReference<List<Employee>>() {});
+
+        assertThat(actual).isEqualTo(expectedList);
+    }
+
+    @Test
+    public void shouldReturnOnlyThreeEmployeesByCharge() throws Exception {
+
+        ObjectMapper mapper = new ObjectMapper();
+
+
+        List<Employee> employeesList = Arrays.asList(
+                new Employee( 1L,"David", "Beckham", "Developer", 400000L, null),
+                new Employee(2L,"Michael", "Ballack", "Developer", 450000L, null),
+                new Employee(3L,"Lionel", "Messi", "Developer", 50000L, null),
+                new Employee(4L,"Leonard", "Ballack", "CEO", 1450000L, null));
+
+        List expectedList = Arrays.asList(
+                employeesList.toArray()[0],
+                employeesList.toArray()[1],
+                employeesList.toArray()[2]);
+
+        List<Specification> specs = Arrays.asList(specifications.hasCharge("Developer"));
+
+        when(specifications.buildCriteria(
+                null,
+                null,
+                "Developer",
+                null))
+                .thenReturn((root, query, builder) -> builder.and(specs.toArray(new Predicate[]{}))) ;
+
+        when(service
+                .getAll(specifications.buildCriteria(null ,null, "Developer", null)))
+                .thenReturn(expectedList);
+
+        MvcResult result = this.mockMvc.perform(get("/employees?charge=Developer"))
+                .andReturn();
+
+        List<Employee> actual = mapper
+                .readValue(
+                        result.getResponse().getContentAsString(),
+                        new TypeReference<List<Employee>>() {});
+
+        assertThat(actual).isEqualTo(expectedList);
+    }
+
+    @Test
+    public void shouldReturnOnlyOneEmployeesBySalary() throws Exception {
+
+        ObjectMapper mapper = new ObjectMapper();
+
+
+        List<Employee> employeesList = Arrays.asList(
+                new Employee( 1L,"David", "Beckham", "Developer", 40000L, null),
+                new Employee(2L,"Michael", "Ballack", "Developer", 45000L, null),
+                new Employee(3L,"Lionel", "Messi", "Developer", 50000L, null),
+                new Employee(4L,"Leonard", "Ballack", "CEO", 145000L, null));
+
+        List expectedList = Arrays.asList(employeesList.toArray()[0]);
+
+        List<Specification> specs = Collections.singletonList(specifications.hasSalary(40000L));
+
+        when(specifications.buildCriteria(
+                null,
+                null,
+                null,
+                40000L))
+                .thenReturn((root, query, builder) -> builder.and(specs.toArray(new Predicate[]{}))) ;
+
+        when(service
+                .getAll(specifications.buildCriteria(null ,null, null, 40000L)))
+                .thenReturn(expectedList);
+
+        MvcResult result = this.mockMvc.perform(get("/employees?salary=40000"))
+                .andReturn();
+
+        List<Employee> actual = mapper
+                .readValue(
+                        result.getResponse().getContentAsString(),
+                        new TypeReference<List<Employee>>() {});
+
+        assertThat(actual).isEqualTo(expectedList);
+    }
+
+    @Test
+    public void shouldSaveSuccessFully() throws Exception {
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        Employee employee = new Employee(
+                "new",
+                "employee",
+                "a charge",
+                4000L);
+
+        when(service
+                .save(employee))
+                .thenReturn(Boolean.TRUE);
+
+
+        MvcResult result = this.mockMvc.perform(
+                post("/employees")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"firstName\": \"new\", \"lastName\": \"employee\", " +
+                                "\"charge\": \"charge\", \"salary\": 4000}"))
+                .andReturn();
+
+        Boolean actual = mapper
+                .readValue(
+                        result.getResponse().getContentAsString(),
+                        new TypeReference<Boolean>() {});
+
+        assertThat(actual).isEqualTo(true);
+    }
+
 }
+
+
