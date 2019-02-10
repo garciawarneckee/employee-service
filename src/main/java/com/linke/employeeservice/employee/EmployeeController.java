@@ -11,8 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class EmployeeController {
@@ -35,9 +38,12 @@ public class EmployeeController {
         return this.service.getAll(filters);
     }
 
-    @PostMapping(path = "/employees", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity save(@RequestBody Employee employee) {
+    @PostMapping(path = "/employees")
+    public ResponseEntity save(@RequestPart("employee") Employee employee,
+                               @RequestPart("photo") MultipartFile photo) {
         try {
+            String fileName = employee.getFirstName() + "_" + employee.getLastName() + "_" + employee.getCharge();
+            this.service.uploadPhoto(fileName, photo);
             this.service.save(employee);
             return new ResponseEntity<>(Boolean.TRUE, HttpStatus.CREATED);
         } catch (RuntimeException rex) {
@@ -54,7 +60,7 @@ public class EmployeeController {
                     HttpStatus.CREATED);
         } catch (IOException ioe) {
             return new ResponseEntity<>(
-                    "There was an error during the processing of the file plaese send it again ",
+                    "There was an error during the processing of the file please send it again ",
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -66,3 +72,4 @@ public class EmployeeController {
     }
 
 }
+
