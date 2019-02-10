@@ -31,7 +31,13 @@ public class EmployeeService {
      * @return list of employees.
      */
     public List<Employee> getAll(Specification filters) {
-        return employeeRepository.findAll(filters);
+        List<Employee> employees = employeeRepository.findAll(filters);
+        employees.forEach(e ->  e.setPhoto(this.amazonClient
+                        .getS3Object(
+                                e.getFirstName() +"_" +
+                                        e.getLastName() + "_" +
+                                        e.getCharge())));
+        return employees;
     }
 
     /**

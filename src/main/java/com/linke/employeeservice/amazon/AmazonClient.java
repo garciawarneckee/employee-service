@@ -1,6 +1,5 @@
 package com.linke.employeeservice.amazon;
 
-
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentials;
@@ -9,7 +8,10 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import com.linke.employeeservice.helpers.FileHelpers;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import static com.linke.employeeservice.helpers.FileHelpers.convertMultiPartToFile;
 
@@ -59,6 +62,24 @@ public class AmazonClient {
 		uploadFileTos3bucket(fileName, file);
 		file.delete();
 		return fileUrl;
+	}
+
+	/**
+	 * Retrieves an object of S3 instance.
+	 * @param objectKey unique identifier of the object.
+	 * @return the object, if there is no object it gonna returns null
+	 */
+	public String getS3Object(String objectKey) {
+		try {
+			S3Object fullObject = this.s3client.getObject(new GetObjectRequest(bucketName, objectKey));
+			if(fullObject == null) { return null; }
+			InputStream file = fullObject.getObjectContent();
+			return FileHelpers.parseFileToBase64String(file);
+		} catch (AmazonServiceException | IOException ioex) {
+			return null;
+		}
+
+
 	}
 
 	/**
