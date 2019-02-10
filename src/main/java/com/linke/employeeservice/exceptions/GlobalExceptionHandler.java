@@ -18,12 +18,6 @@ import java.io.IOException;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-	@ExceptionHandler({ AmazonServiceException.class, SdkClientException.class })
-	ResponseEntity<Object> handleAmazonExceptions(RuntimeException ex, WebRequest request) {
-		String bodyOfResponse = "There was an error while image upload, please try again later or contact administration";
-		return new ResponseEntity<>(bodyOfResponse, HttpStatus.SERVICE_UNAVAILABLE);
-	}
-
 	@ExceptionHandler({ IOException.class })
 	ResponseEntity<Object> handleIOExceptions(RuntimeException ex, WebRequest request) {
 		String bodyOfResponse = "There was an error processing the file you sent please try again later.";

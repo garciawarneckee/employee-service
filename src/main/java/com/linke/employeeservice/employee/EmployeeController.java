@@ -1,5 +1,7 @@
 package com.linke.employeeservice.employee;
 
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.SdkClientException;
 import com.linke.employeeservice.employee.repository.EmployeeSpecifications;
 import com.linke.employeeservice.employee.service.EmployeeService;
 import com.linke.employeeservice.helpers.CsvHelper;
@@ -44,12 +46,18 @@ public class EmployeeController {
     @PostMapping(path = "/employees")
     public ResponseEntity save(@RequestPart("employee") Employee employee,
                                @RequestPart(value = "photo", required = false) MultipartFile photo) throws IOException {
-        this.service.save(employee);
-        if(photo != null) {
-            String fileName = employee.getFirstName() + "_" + employee.getLastName() + "_" + employee.getCharge();
-            this.service.uploadPhoto(fileName, photo);
+        try {
+            this.service.save(employee);
+            if(photo != null) {
+                String fileName = employee.getFirstName() + "_" + employee.getLastName() + "_" + employee.getCharge();
+                this.service.uploadPhoto(fileName, photo);
+            }
+            return new ResponseEntity<>(Boolean.TRUE, HttpStatus.CREATED);
+        } catch (SdkClientException e) {
+            String bodyOfResponse = "There was an error while image upload, please try again later or contact administration";
+            return new ResponseEntity<>(bodyOfResponse, HttpStatus.SERVICE_UNAVAILABLE);
         }
-        return new ResponseEntity<>(Boolean.TRUE, HttpStatus.CREATED);
+
     }
 
     /**

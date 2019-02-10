@@ -9,6 +9,13 @@ import java.util.List;
 
 public class CsvHelper {
 
+	/**
+	 * Parse the data of each line of a csv file to a business entity
+	 * @param clazz resulting business entity
+	 * @param stream csv file
+	 * @param <T> Type of business entity
+	 * @return List of business entities
+	 */
 	public static <T> List<T> read(Class<T> clazz, InputStream stream) {
 		try {
 			CsvSchema bootstrapSchema = CsvSchema.emptySchema().withHeader();
