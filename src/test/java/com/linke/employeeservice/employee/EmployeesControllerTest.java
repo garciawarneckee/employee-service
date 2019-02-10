@@ -2,12 +2,12 @@ package com.linke.employeeservice.employee;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,11 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.RecoverableDataAccessException;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 
 import javax.persistence.criteria.Predicate;
@@ -249,14 +251,35 @@ public class EmployeesControllerTest {
                 .save(employee))
                 .thenReturn(Boolean.TRUE);
 
-        this.mockMvc.perform(
-                post("/employees")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{ \"firstName\": \"new\", \"lastName\": \"employee\", " +
-                                "\"charge\": \"charge\", \"salary\": 4000}"))
+        MockMultipartFile jsonFile = new MockMultipartFile(
+                "employee",
+                "",
+                "application/json",
+                "{\"firstName\": \"new\", \"lastName\": \"employee\", \"charge\": \"charge\", \"salary\": 4000}".getBytes());
+
+        this.mockMvc.perform(MockMvcRequestBuilders.multipart("/employees")
+                    .file(jsonFile))
                 .andExpect(content().string("true"))
                 .andExpect(status().is(201));
     }
+
+    @Test
+    public void shouldThrowInternalServerErrorWhenSaveProcessFail() throws Exception {
+
+        when(service.save(any())).thenThrow(new RecoverableDataAccessException("Error occurred"));
+
+        MockMultipartFile jsonFile = new MockMultipartFile(
+                "employee",
+                "",
+                "application/json",
+                "{\"firstName\": \"new\", \"lastName\": \"employee\", \"charge\": \"charge\", \"salary\": 4000}".getBytes());
+
+        this.mockMvc.perform(MockMvcRequestBuilders.multipart("/employees")
+                .file(jsonFile))
+                .andExpect(content().string("There was an error to retrieve or process the requested data, please try again later."))
+                .andExpect(status().is(500));
+    }
+
 
     @Test
     public void shouldDeleteSuccessfully() throws Exception {
@@ -269,6 +292,18 @@ public class EmployeesControllerTest {
                 delete("/employees/3"))
                 .andExpect(content().string("true"))
                 .andExpect(status().is(200));
+    }
+
+    @Test
+    public void deleteShouldReturnBadRequestIfNotNumericIdIsProvided() throws Exception {
+
+        when(service
+                .delete(3L))
+                .thenReturn(Boolean.TRUE);
+
+        this.mockMvc.perform(
+                delete("/employees/sajdhasjdhasd"))
+                .andExpect(status().is(400));
     }
 
 }
