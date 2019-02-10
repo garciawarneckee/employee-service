@@ -35,29 +35,32 @@ public class EmployeeController {
         return this.service.getAll(filters);
     }
 
-    @PostMapping(path = "/employees", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity save(@RequestBody Employee employee) {
-        try {
-            this.service.save(employee);
-            return new ResponseEntity<>(Boolean.TRUE, HttpStatus.CREATED);
-        } catch (RuntimeException rex) {
-            return new ResponseEntity<>(Boolean.TRUE, HttpStatus.INTERNAL_SERVER_ERROR);
+    /**
+     * Saves an employee data with the optional photo.
+     * @param employee
+     * @param photo
+     * @return
+     */
+    @PostMapping(path = "/employees")
+    public ResponseEntity save(@RequestPart("employee") Employee employee,
+                               @RequestPart(value = "photo", required = false) MultipartFile photo) throws IOException {
+        this.service.save(employee);
+        if(photo != null) {
+            String fileName = employee.getFirstName() + "_" + employee.getLastName() + "_" + employee.getCharge();
+            this.service.uploadPhoto(fileName, photo);
         }
+        return new ResponseEntity<>(Boolean.TRUE, HttpStatus.CREATED);
     }
 
+    /**
+     * Makes a bulk save of Employees with basic data provided by a CSV file.
+     * @param file employees data to be saved.
+     * @return
+     */
     @PostMapping(path = "/employees/csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity csvSave(@RequestParam("file") MultipartFile file) {
-        try {
-            service.bulkSave(CsvHelper.read(Employee.class, file.getInputStream()));
-            return new ResponseEntity<>(
-                    Boolean.TRUE,
-                    HttpStatus.CREATED);
-        } catch (IOException ioe) {
-            return new ResponseEntity<>(
-                    "There was an error during the processing of the file plaese send it again ",
-                    HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
+    public ResponseEntity csvSave(@RequestParam("file") MultipartFile file) throws IOException {
+        service.bulkSave(CsvHelper.read(Employee.class, file.getInputStream()));
+        return new ResponseEntity<>(Boolean.TRUE, HttpStatus.CREATED);
     }
 
     @DeleteMapping(path = "/employees/{id}")
@@ -66,3 +69,4 @@ public class EmployeeController {
     }
 
 }
+

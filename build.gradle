@@ -24,8 +24,13 @@ repositories {
 
 dependencies {
 	compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-csv', version: '2.9.8'
+	compile group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.11.494'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	runtimeOnly 'com.h2database:h2'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+bootRun {
+	args = ["--spring.profiles.active=desa"]
 }

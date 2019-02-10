@@ -5,7 +5,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
-import java.io.File;
 import java.util.Objects;
 
 @Entity
@@ -27,7 +26,7 @@ public class Employee {
     @NotNull
     private Long salary;
 
-    private File photo;
+    private String photo;
 
     public Employee() {}
 
@@ -38,7 +37,7 @@ public class Employee {
         this.salary = salary;
     }
 
-    public Employee(Long id, String firstName, String lastName, String charge, Long salary, File photo) {
+    public Employee(Long id, String firstName, String lastName, String charge, Long salary, String photo) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -87,11 +86,11 @@ public class Employee {
         this.salary = salary;
     }
 
-    public File getPhoto() {
+    public String getPhoto() {
         return photo;
     }
 
-    public void setPhoto(File photo) {
+    public void setPhoto(String photo) {
         this.photo = photo;
     }
 
@@ -105,7 +104,7 @@ public class Employee {
                 lastName.equals(employee.lastName) &&
                 charge.equals(employee.charge) &&
                 salary.equals(employee.salary) &&
-                Objects.equals(photo, employee.photo);
+                photo.equals(employee.photo);
     }
 
     @Override

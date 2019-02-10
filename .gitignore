@@ -17,6 +17,7 @@
 *.iml
 *.ipr
 /out/
+application-desa.yml
 
 ### NetBeans ###
 /nbproject/private/
