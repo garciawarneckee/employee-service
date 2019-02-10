@@ -100,16 +100,15 @@ public class Employee {
         if (o == null || getClass() != o.getClass()) return false;
         Employee employee = (Employee) o;
         return Objects.equals(id, employee.id) &&
-                firstName.equals(employee.firstName) &&
-                lastName.equals(employee.lastName) &&
-                charge.equals(employee.charge) &&
-                salary.equals(employee.salary) &&
-                photo.equals(employee.photo);
+                Objects.equals(firstName, employee.firstName) &&
+                Objects.equals(lastName, employee.lastName) &&
+                Objects.equals(charge, employee.charge) &&
+                Objects.equals(salary, employee.salary) &&
+                Objects.equals(photo, employee.photo);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, firstName, lastName, charge, salary, photo);
     }
-
 }
